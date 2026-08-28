@@ -7,11 +7,16 @@ import sys
 from pathlib import Path
 
 try:
+    import pymupdf
+    sys.modules['fitz'] = pymupdf
     from pdf2docx import Converter
 except ImportError:
-    print("Error: pdf2docx not installed.")
-    print("Run: pip install pdf2docx")
-    sys.exit(1)
+    try:
+        from pdf2docx import Converter
+    except ImportError:
+        print("Error: pdf2docx not installed.")
+        print("Run: pip install pdf2docx")
+        sys.exit(1)
 
 
 SUPPORTED_INPUT = ".pdf"
