@@ -1,148 +1,122 @@
 <div align="center">
 
-# 📄 PDF to Word Converter
+# 📚 PaperGrab
 
-### PDF 转 Word，一键搞定 — 批量转换 · 保留格式 · 命令行工具
+### 学生专用 PDF 转 Word 工具 — 批量转换课件 · 保留格式 · 命令行操作
 
-A Python tool to batch convert PDF files to editable Word documents on Windows.
+A PDF-to-Word converter designed for students: batch-convert courseware and papers to editable Word, with format preservation.
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows-green.svg)](https://github.com/12341141552204/pdf2word)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/12341141552204/pdf2word?style=social)](https://github.com/12341141552204/pdf2word)
+[![Stars](https://img.shields.io/github/stars/12341141552204/pdf2word)](https://github.com/12341141552204/pdf2word)
 
 </div>
 
----
+## 🎯 为什么学生需要这个工具
+
+老师发的课件是 PDF，想改笔记要手动重新打字。论文 PDF 想引用内容，复制粘贴排版全乱。
+
+**PaperGrab 帮你：**
+- 📄 PDF 课件一键转 Word，直接在 Word 里做笔记
+- 📑 论文转 Word，保留段落格式方便引用编辑
+- 📦 整个文件夹的 PDF 批量转换，期末复习效率翻倍
 
 ## ✨ 功能特性
 
 | 功能 | 说明 |
 |---|---|
-| 📄 **单文件转换** | 将单个 PDF 转换为可编辑的 Word 文档 |
-| 📁 **批量转换** | 一键转换文件夹内所有 PDF 文件 |
-| 🎨 **保留格式** | 自动保留原 PDF 的排版、表格、图片和文字格式 |
-| 📑 **指定页码** | 支持只转换指定页码范围（如第 3-10 页） |
-| ℹ️ **文件信息** | 查看 PDF 页数等基本信息 |
-| 🚀 **简单易用** | 一行命令完成转换，无需复杂操作 |
+| 批量转换 | 一次转换文件夹内所有 PDF |
+| 保留格式 | 段落、表格、列表格式完整保留 |
+| 单文件转换 | 指定单个 PDF 精准转换 |
+| PDF 信息 | 查看页数、文件大小、是否加密 |
+| 保留图片 | PDF 中的图片自动提取到 Word |
 
-## 🚀 快速开始
-
-### 安装
+## 📦 安装
 
 ```bash
+# 克隆仓库
 git clone https://github.com/12341141552204/pdf2word.git
-cd pdf2word
+
+# 安装依赖
 pip install -r requirements.txt
 ```
 
-### 单文件转换
+## 🚀 使用方法
+
+### 1. 转换单个 PDF（课件/论文）
 
 ```bash
-# 基本用法：生成同名 .docx 文件
-python main.py convert "C:\Documents\report.pdf"
+# 转换老师的课件
+python main.py convert "D:\课件\高等数学第3章.pdf"
 
-# 指定输出文件名
-python main.py convert "report.pdf" -o "my_report.docx"
-
-# 只转换第 3-10 页（从 0 开始计数）
-python main.py convert "report.pdf" --start 2 --end 10
+# 指定输出路径
+python main.py convert "D:\课件\高等数学第3章.pdf" -o "D:\笔记\高数第3章.docx"
 ```
 
-### 批量转换
+### 2. 批量转换（期末复习）
 
 ```bash
-# 转换文件夹内所有 PDF
-python main.py batch "C:\Documents"
-
-# 输出到指定文件夹
-python main.py batch "C:\Documents" -o "C:\Output"
+# 转换整个课件文件夹
+python main.py batch "D:\本学期课件\"
 ```
 
-转换过程示例：
+转换效果：
 ```
-Found 3 PDF file(s)
+输入：
+  高等数学第1章.pdf
+  高等数学第2章.pdf
+  英语阅读材料.pdf
+  毛概课件.pdf
 
-[1/3] Converting: report_2024.pdf -> report_2024.docx
-  Done! Saved to: C:\Output\report_2024.docx
-[2/3] Converting: contract.pdf -> contract.docx
-  Done! Saved to: C:\Output\contract.docx
-[3/3] Converting: invoice.pdf -> invoice.docx
-  Done! Saved to: C:\Output\invoice.docx
-
-Results: 3 succeeded, 0 failed, 3 total.
+输出：
+  高等数学第1章.docx
+  高等数学第2章.docx
+  英语阅读材料.docx
+  毛概课件.docx
 ```
 
-### 查看 PDF 信息
+### 3. 查看 PDF 信息
 
 ```bash
-python main.py info "C:\Documents\report.pdf"
-# 输出:
-# File: report.pdf
-# Pages: 24
+python main.py info "D:\论文\xxx大学学位论文.pdf"
 ```
 
 ## 📖 命令参考
 
-| 命令 | 说明 | 示例 |
-|---|---|---|
-| `convert` | 转换单个 PDF | `python main.py convert "file.pdf" [-o output.docx] [--start N] [--end M]` |
-| `batch` | 批量转换文件夹 | `python main.py batch "folder" [-o output_folder] [--start N] [--end M]` |
-| `info` | 查看 PDF 信息 | `python main.py info "file.pdf"` |
-
-## 🛠️ 技术栈
-
-- **Python 3.8+**
-- [pdf2docx](https://github.com/dothinking/pdf2docx) - PDF 转 Word 核心引擎
-- 纯命令行界面，无需 GUI
-
-## 📋 使用场景
-
-| 场景 | 说明 |
+| 命令 | 用途 |
 |---|---|
-| 办公文档 | PDF 报告转 Word 修改编辑 |
-| 合同处理 | 批量转换合同 PDF 为 Word 格式 |
-| 学习资料 | 课件、论文 PDF 转 Word 做笔记 |
-| 发票管理 | 批量转换发票 PDF 为 Word 归档 |
+| `convert <PDF>` | 转换单个 PDF |
+| `convert <PDF> -o <输出>` | 指定输出路径 |
+| `batch <文件夹>` | 批量转换 |
+| `batch <文件夹> --recursive` | 递归扫描子目录 |
+| `info <PDF>` | 查看 PDF 页数和信息 |
 
-## 🤝 参与贡献
+## 💡 使用场景
 
-欢迎提交 Issue 和 Pull Request！
+| 场景 | 操作 |
+|---|---|
+| 老师发 PDF 课件，想做笔记 | `convert` 转成 Word，直接在里面写笔记 |
+| 下载论文 PDF，要引用内容 | `convert` 转成 Word，复制粘贴排版不乱 |
+| 期末复习，几十个 PDF 课件 | `batch` 批量转换，一次性搞定 |
+| 毕业论文 PDF 查重前 | `info` 查看页数，确认格式 |
 
-1. Fork 本仓库
-2. 创建分支 `git checkout -b feature/YourFeature`
-3. 提交更改 `git commit -m 'Add some feature'`
-4. 推送分支 `git push origin feature/YourFeature`
-5. 发起 Pull Request
+## 🤝 贡献
 
-## 💖 支持这个项目
+欢迎提交 Issue 和 PR！请阅读 [贡献指南](CONTRIBUTING.md)。
 
-如果这个工具对你有帮助，请考虑支持开发者：
+## 💖 赞助
 
-- ⭐ Star 这个项目
-- 🐛 报告 Bug 或建议新功能
-- 💝 赞助支持：[爱发电 JingJingZ](https://afdian.com/a/JingJingZ)
+如果这个工具帮你省了整理笔记的时间，请考虑赞助：
 
-### 赞助方案
-
-| 等级 | 月费 | 权益 |
+| 方案 | 月费 | 权益 |
 |---|---|---|
-| 🥤 随手一杯 | ¥5 | README 署名 + 月度进展 + 交流群 |
-| 🚀 催更选手 | ¥15 | 以上 + 内测体验 + 每月点名 1 个功能优先排期 + Issue 优先回复 |
-| 👑 金主爸爸 | ¥50 | 以上 + 每月 2 个需求直接排进计划 + 项目首页挂名字/Logo + 新工具首发通知 |
+| 🥤 随手一杯 | ¥5 | README 署名 + 月度进展 |
+| 🚀 催更选手 | ¥15 | 提前体验 + 优先排功能 |
+| 👑 金主爸爸 | ¥50 | 功能优先建议 + 项目挂名 |
 
-## 📄 License
+👉 [爱发电赞助](https://afdian.com/a/JingJingZ)
 
-本项目基于 [MIT License](LICENSE) 开源。
+## 📄 许可证
 
-本项目使用了 [pdf2docx](https://github.com/dothinking/pdf2docx) 开源库（Apache 2.0 License）。
-
----
-
-<div align="center">
-
-Made with ❤️ and Python on Windows
-
-[GitHub](https://github.com/12341141552204) · [爱发电](https://afdian.com/a/JingJingZ)
-
-</div>
+[MIT License](LICENSE) - 自由使用，欢迎商用
