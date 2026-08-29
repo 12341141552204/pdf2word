@@ -1,1 +1,4 @@
 pdf2docx>=0.5.8
+Pillow>=9.0.0
+python-docx>=0.8.11
+pywin32>=305; sys_platform == "win32"

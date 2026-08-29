@@ -2,9 +2,9 @@
 
 # 📚 PaperGrab
 
-### 学生专用 PDF 转 Word 工具 — 批量转换课件 · 保留格式 · 命令行操作
+### 学生专用万能文档转换器 — PDF / Word / 图片互转 · 批量处理 · 保留格式
 
-A PDF-to-Word converter designed for students: batch-convert courseware and papers to editable Word, with format preservation.
+A universal document converter for students: convert between PDF, Word, and images with one tool.
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows-green.svg)](https://github.com/12341141552204/pdf2word)
@@ -15,22 +15,25 @@ A PDF-to-Word converter designed for students: batch-convert courseware and pape
 
 ## 🎯 为什么学生需要这个工具
 
-老师发的课件是 PDF，想改笔记要手动重新打字。论文 PDF 想引用内容，复制粘贴排版全乱。
+老师发的课件是 PDF，想改笔记要手动重新打字。手机拍的手写笔记是图片，想整理成文档要一张张粘贴。论文 PDF 想引用内容，复制粘贴排版全乱。
 
 **PaperGrab 帮你：**
 - 📄 PDF 课件一键转 Word，直接在 Word 里做笔记
 - 📑 论文转 Word，保留段落格式方便引用编辑
+- 🖼️ 手机拍的手写笔记图片，一键合成 PDF 或 Word
 - 📦 整个文件夹的 PDF 批量转换，期末复习效率翻倍
 
 ## ✨ 功能特性
 
 | 功能 | 说明 |
 |---|---|
+| PDF → Word | 段落、表格、列表格式完整保留 |
+| Word → PDF | 一键转换，需安装 Microsoft Word |
+| PDF → 图片 | 每页导出为 PNG/JPG，可调分辨率 |
+| 图片 → PDF | 多张图片合成一个 PDF |
+| 图片 → Word | 多张图片插入 Word 文档 |
+| Word → 图片 | Word 每页导出为图片 |
 | 批量转换 | 一次转换文件夹内所有 PDF |
-| 保留格式 | 段落、表格、列表格式完整保留 |
-| 单文件转换 | 指定单个 PDF 精准转换 |
-| PDF 信息 | 查看页数、文件大小、是否加密 |
-| 保留图片 | PDF 中的图片自动提取到 Word |
 
 ## 📦 安装
 
@@ -44,7 +47,7 @@ pip install -r requirements.txt
 
 ## 🚀 使用方法
 
-### 1. 转换单个 PDF（课件/论文）
+### 1. PDF → Word（课件/论文转文档）
 
 ```bash
 # 转换老师的课件
@@ -54,29 +57,52 @@ python main.py convert "D:\课件\高等数学第3章.pdf"
 python main.py convert "D:\课件\高等数学第3章.pdf" -o "D:\笔记\高数第3章.docx"
 ```
 
-### 2. 批量转换（期末复习）
+### 2. Word → PDF（交作业前转格式）
 
 ```bash
-# 转换整个课件文件夹
+python main.py word2pdf "D:\作业\实验报告.docx"
+```
+
+### 3. PDF → 图片（做笔记截图）
+
+```bash
+# 整个 PDF 转为图片
+python main.py pdf2img "D:\课件\线性代数.pdf"
+
+# 指定分辨率和格式
+python main.py pdf2img "D:\课件\线性代数.pdf" --dpi 300 --format jpg
+```
+
+### 4. 图片 → PDF（手写笔记整理）
+
+```bash
+# 单张图片转 PDF
+python main.py img2pdf "D:\笔记\IMG_001.jpg"
+
+# 整个文件夹的图片合成一个 PDF
+python main.py img2pdf "D:\笔记\拍照图片\"
+```
+
+### 5. 图片 → Word（手写笔记变文档）
+
+```bash
+# 多张手写笔记图片插入 Word
+python main.py img2word "D:\笔记\拍照图片\"
+```
+
+### 6. Word → 图片（作业截图提交）
+
+```bash
+python main.py word2img "D:\作业\实验报告.docx"
+```
+
+### 7. 批量 PDF → Word（期末复习）
+
+```bash
 python main.py batch "D:\本学期课件\"
 ```
 
-转换效果：
-```
-输入：
-  高等数学第1章.pdf
-  高等数学第2章.pdf
-  英语阅读材料.pdf
-  毛概课件.pdf
-
-输出：
-  高等数学第1章.docx
-  高等数学第2章.docx
-  英语阅读材料.docx
-  毛概课件.docx
-```
-
-### 3. 查看 PDF 信息
+### 8. 查看 PDF 信息
 
 ```bash
 python main.py info "D:\论文\xxx大学学位论文.pdf"
@@ -86,20 +112,29 @@ python main.py info "D:\论文\xxx大学学位论文.pdf"
 
 | 命令 | 用途 |
 |---|---|
-| `convert <PDF>` | 转换单个 PDF |
+| `convert <PDF>` | PDF → Word |
 | `convert <PDF> -o <输出>` | 指定输出路径 |
-| `batch <文件夹>` | 批量转换 |
-| `batch <文件夹> --recursive` | 递归扫描子目录 |
+| `batch <文件夹>` | 批量 PDF → Word |
+| `pdf2img <PDF>` | PDF → 图片 |
+| `pdf2img <PDF> --dpi 300 --format jpg` | 高分辨率 JPG |
+| `img2pdf <图片/文件夹>` | 图片 → PDF |
+| `img2word <图片/文件夹>` | 图片 → Word |
+| `word2pdf <Word>` | Word → PDF |
+| `word2img <Word>` | Word → 图片 |
 | `info <PDF>` | 查看 PDF 页数和信息 |
 
 ## 💡 使用场景
 
 | 场景 | 操作 |
 |---|---|
-| 老师发 PDF 课件，想做笔记 | `convert` 转成 Word，直接在里面写笔记 |
-| 下载论文 PDF，要引用内容 | `convert` 转成 Word，复制粘贴排版不乱 |
-| 期末复习，几十个 PDF 课件 | `batch` 批量转换，一次性搞定 |
-| 毕业论文 PDF 查重前 | `info` 查看页数，确认格式 |
+| 老师发 PDF 课件，想做笔记 | `convert` 转成 Word，直接写笔记 |
+| 下载论文 PDF，要引用内容 | `convert` 转成 Word，复制粘贴不乱 |
+| 期末复习，几十个 PDF 课件 | `batch` 批量转换 |
+| 手机拍手写笔记，想合成 PDF | `img2pdf` 图片转 PDF |
+| 手机拍手写笔记，想变 Word | `img2word` 图片转 Word |
+| 作业写完 Word，要截图提交 | `word2img` Word 转图片 |
+| 作业写完 Word，要交 PDF | `word2pdf` Word 转 PDF |
+| 毕业论文查页数 | `info` 查看 PDF 信息 |
 
 ## 🤝 贡献
 
