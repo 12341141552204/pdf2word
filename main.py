@@ -304,18 +304,261 @@ def word_to_images(word_path, output_dir=None, dpi=150, fmt="png"):
     tmp_pdf.unlink()
 
 
+def pdf_to_text(pdf_path, output_path=None):
+    """Extract text from a PDF file using PyMuPDF."""
+    pdf_path = Path(pdf_path)
+    if not pdf_path.exists():
+        print(f"Error: File not found: {pdf_path}")
+        return
+
+    if output_path:
+        out = Path(output_path)
+    else:
+        out = pdf_path.with_suffix(".txt")
+
+    try:
+        doc = pymupdf.open(str(pdf_path))
+        total = doc.page_count
+        text_parts = []
+        for i in range(total):
+            page = doc[i]
+            text_parts.append(f"--- Page {i+1} ---\n")
+            text_parts.append(page.get_text())
+        doc.close()
+
+        out.write_text("".join(text_parts), encoding="utf-8")
+        print(f"PDF: {pdf_path.name} ({total} pages)")
+        print(f"Output: {out}")
+        print(f"Done! Text extracted to {out}")
+    except Exception as e:
+        print(f"Error: {e}")
+
+
+def convert_image_format(input_path, output_path=None, fmt="png"):
+    """Convert image to a different format using Pillow."""
+    input_path = Path(input_path)
+    if not input_path.exists():
+        print(f"Error: File not found: {input_path}")
+        return
+
+    if input_path.is_dir():
+        imgs = sorted([f for f in input_path.iterdir() if f.suffix.lower() in IMAGE_EXTENSIONS])
+    elif input_path.suffix.lower() in IMAGE_EXTENSIONS:
+        imgs = [input_path]
+    else:
+        print(f"Error: Not an image or directory: {input_path}")
+        return
+
+    if not imgs:
+        print("No images found.")
+        return
+
+    out_dir = Path(output_path) if output_path else input_path.parent if input_path.is_file() else input_path
+    if not out_dir.exists():
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"Converting {len(imgs)} image(s) to {fmt.upper()}\n")
+    success = 0
+    for i, img_path in enumerate(imgs, 1):
+        try:
+            img = Image.open(str(img_path))
+            out_name = f"{img_path.stem}.{fmt}"
+            out_path = out_dir / out_name
+            if fmt == "jpg" and img.mode == "RGBA":
+                img = img.convert("RGB")
+            img.save(str(out_path), fmt.upper() if fmt != "jpg" else "JPEG")
+            print(f"  [{i}/{len(imgs)}] {img_path.name} -> {out_name}")
+            success += 1
+        except Exception as e:
+            print(f"  [{i}/{len(imgs)}] {img_path.name} -> Error: {e}")
+
+    print(f"\nDone! {success}/{len(imgs)} converted.")
+
+
+def merge_pdfs(pdf_list, output_path):
+    """Merge multiple PDF files into one using PyMuPDF."""
+    pdfs = [Path(p) for p in pdf_list if Path(p).exists()]
+    if len(pdfs) < 2:
+        print("Error: Need at least 2 PDF files to merge.")
+        return
+
+    out = Path(output_path) if output_path else Path("merged.pdf")
+
+    try:
+        result = pymupdf.open()
+        for i, pdf in enumerate(pdfs, 1):
+            src = pymupdf.open(str(pdf))
+            result.insert_pdf(src)
+            print(f"  [{i}/{len(pdfs)}] {pdf.name} ({src.page_count} pages)")
+            src.close()
+
+        result.save(str(out))
+        total = result.page_count
+        result.close()
+        print(f"\nDone! {len(pdfs)} PDFs merged into {out} ({total} pages)")
+    except Exception as e:
+        print(f"Error: {e}")
+
+
+def split_pdf(pdf_path, output_dir=None, pages_per_file=1):
+    """Split a PDF into multiple files using PyMuPDF."""
+    pdf_path = Path(pdf_path)
+    if not pdf_path.exists():
+        print(f"Error: File not found: {pdf_path}")
+        return
+
+    if output_dir:
+        out_dir = Path(output_dir)
+    else:
+        out_dir = pdf_path.parent / f"{pdf_path.stem}_split"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        doc = pymupdf.open(str(pdf_path))
+        total = doc.page_count
+        print(f"PDF: {pdf_path.name} ({total} pages)")
+        print(f"Output: {out_dir} ({pages_per_file} pages/file)\n")
+
+        part = 0
+        start = 0
+        while start < total:
+            end = min(start + pages_per_file, total)
+            out_path = out_dir / f"{pdf_path.stem}_part{part+1:03d}.pdf"
+            new_doc = pymupdf.open()
+            new_doc.insert_pdf(doc, from_page=start, to_page=end - 1)
+            new_doc.save(str(out_path))
+            new_doc.close()
+            print(f"  Part {part+1}: pages {start+1}-{end} -> {out_path.name}")
+            start = end
+            part += 1
+
+        doc.close()
+        print(f"\nDone! Split into {part} files.")
+    except Exception as e:
+        print(f"Error: {e}")
+
+
+def excel_to_pdf(excel_path, output_path=None):
+    """Convert Excel file to PDF using Microsoft Excel COM automation."""
+    excel_path = Path(excel_path)
+    if not excel_path.exists():
+        print(f"Error: File not found: {excel_path}")
+        return
+
+    if excel_path.suffix.lower() not in (".xls", ".xlsx"):
+        print(f"Error: Not an Excel file: {excel_path}")
+        return
+
+    if output_path:
+        out = Path(output_path)
+    else:
+        out = excel_path.with_suffix(".pdf")
+
+    print(f"Excel: {excel_path.name}")
+    print(f"Output: {out}\n")
+
+    try:
+        import win32com.client
+        excel = win32com.client.Dispatch("Excel.Application")
+        excel.Visible = False
+        wb = excel.Workbooks.Open(str(excel_path.resolve()))
+        wb.ExportAsFixedFormat(0, str(out.resolve()))
+        wb.Close(False)
+        excel.Quit()
+        print(f"Done! {out}")
+    except Exception as e:
+        print(f"Error: {e}")
+        print("Note: Microsoft Excel must be installed.")
+
+
+def ppt_to_pdf(ppt_path, output_path=None):
+    """Convert PowerPoint file to PDF using Microsoft PowerPoint COM automation."""
+    ppt_path = Path(ppt_path)
+    if not ppt_path.exists():
+        print(f"Error: File not found: {ppt_path}")
+        return
+
+    if ppt_path.suffix.lower() not in (".ppt", ".pptx"):
+        print(f"Error: Not a PowerPoint file: {ppt_path}")
+        return
+
+    if output_path:
+        out = Path(output_path)
+    else:
+        out = ppt_path.with_suffix(".pdf")
+
+    print(f"PowerPoint: {ppt_path.name}")
+    print(f"Output: {out}\n")
+
+    try:
+        import win32com.client
+        ppt = win32com.client.Dispatch("PowerPoint.Application")
+        ppt.Visible = True
+        pres = ppt.Presentations.Open(str(ppt_path.resolve()), WithWindow=False)
+        pres.SaveAs(str(out.resolve()), 32)
+        pres.Close()
+        ppt.Quit()
+        print(f"Done! {out}")
+    except Exception as e:
+        print(f"Error: {e}")
+        print("Note: Microsoft PowerPoint must be installed.")
+
+
+def text_to_pdf(text_path, output_path=None):
+    """Convert a text file to PDF using fpdf2."""
+    text_path = Path(text_path)
+    if not text_path.exists():
+        print(f"Error: File not found: {text_path}")
+        return
+
+    if output_path:
+        out = Path(output_path)
+    else:
+        out = text_path.with_suffix(".pdf")
+
+    print(f"Text: {text_path.name}")
+    print(f"Output: {out}\n")
+
+    try:
+        from fpdf import FPDF, XPos, YPos
+
+        text = text_path.read_text(encoding="utf-8")
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("helvetica", size=12)
+
+        for line in text.split("\n"):
+            try:
+                pdf.cell(0, 8, text=line, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+            except Exception:
+                pdf.cell(0, 8, text=line.encode("ascii", "replace").decode("ascii"),
+                         new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+        pdf.output(str(out))
+        print(f"Done! {out}")
+    except Exception as e:
+        print(f"Error: {e}")
+
+
 def main():
     parser = argparse.ArgumentParser(
-        description="DocConvert - Universal document converter (PDF/Word/Image inter-conversion).",
+        description="DocConvert - Universal document converter (PDF/Word/Image/Excel/PPT inter-conversion).",
         epilog="Examples:\n"
-               "  PDF → Word:  python main.py convert document.pdf\n"
-               "  Word → PDF:  python main.py word2pdf document.docx\n"
-               "  PDF → Image: python main.py pdf2img document.pdf\n"
-               "  Image → PDF: python main.py img2pdf photo.jpg\n"
+               "  PDF → Word:   python main.py convert document.pdf\n"
+               "  Word → PDF:   python main.py word2pdf document.docx\n"
+               "  PDF → Image:  python main.py pdf2img document.pdf\n"
+               "  Image → PDF:  python main.py img2pdf photo.jpg\n"
                "  Image → Word: python main.py img2word photo.jpg\n"
                "  Word → Image: python main.py word2img document.docx\n"
-               "  Batch PDF → Word: python main.py batch \"C:\\Documents\"\n"
-               "  PDF info: python main.py info document.pdf",
+               "  PDF → Text:   python main.py pdf2text document.pdf\n"
+               "  Image format: python main.py imgconv photo.png --format jpg\n"
+               "  Merge PDFs:   python main.py pdfmerge a.pdf b.pdf c.pdf\n"
+               "  Split PDF:    python main.py pdfsplit document.pdf\n"
+               "  Excel → PDF:  python main.py excel2pdf report.xlsx\n"
+               "  PPT → PDF:    python main.py ppt2pdf slides.pptx\n"
+               "  Text → PDF:   python main.py txt2pdf notes.txt\n"
+               "  Batch:        python main.py batch \"C:\\Documents\"\n"
+               "  PDF info:     python main.py info document.pdf",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
@@ -360,6 +603,36 @@ def main():
     w2i_parser.add_argument("--dpi", type=int, default=150, help="Resolution DPI (default: 150)")
     w2i_parser.add_argument("--format", choices=["png", "jpg"], default="png", help="Image format (default: png)")
 
+    p2t_parser = subparsers.add_parser("pdf2text", help="PDF → Text (extract text)")
+    p2t_parser.add_argument("pdf", help="Path to the PDF file")
+    p2t_parser.add_argument("-o", "--output", help="Output text file path")
+
+    imgc_parser = subparsers.add_parser("imgconv", help="Image format conversion (JPG/PNG/WebP/BMP)")
+    imgc_parser.add_argument("input", help="Image file or folder of images")
+    imgc_parser.add_argument("-o", "--output", help="Output directory")
+    imgc_parser.add_argument("--format", choices=["png", "jpg", "webp", "bmp"], default="png", help="Target format (default: png)")
+
+    pm_parser = subparsers.add_parser("pdfmerge", help="Merge multiple PDFs into one")
+    pm_parser.add_argument("pdfs", nargs="+", help="PDF files to merge (at least 2)")
+    pm_parser.add_argument("-o", "--output", help="Output PDF path")
+
+    ps_parser = subparsers.add_parser("pdfsplit", help="Split a PDF into multiple files")
+    ps_parser.add_argument("pdf", help="Path to the PDF file")
+    ps_parser.add_argument("-o", "--output", help="Output directory")
+    ps_parser.add_argument("--pages", type=int, default=1, help="Pages per file (default: 1)")
+
+    e2p_parser = subparsers.add_parser("excel2pdf", help="Excel → PDF (requires Microsoft Excel)")
+    e2p_parser.add_argument("excel", help="Path to the Excel file (.xls/.xlsx)")
+    e2p_parser.add_argument("-o", "--output", help="Output PDF path")
+
+    pp2p_parser = subparsers.add_parser("ppt2pdf", help="PPT → PDF (requires Microsoft PowerPoint)")
+    pp2p_parser.add_argument("ppt", help="Path to the PowerPoint file (.ppt/.pptx)")
+    pp2p_parser.add_argument("-o", "--output", help="Output PDF path")
+
+    t2p_parser = subparsers.add_parser("txt2pdf", help="Text → PDF")
+    t2p_parser.add_argument("text", help="Path to the text file (.txt)")
+    t2p_parser.add_argument("-o", "--output", help="Output PDF path")
+
     args = parser.parse_args()
 
     if args.command == "convert":
@@ -378,6 +651,20 @@ def main():
         images_to_word(args.input, args.output)
     elif args.command == "word2img":
         word_to_images(args.word, args.output, dpi=args.dpi, fmt=args.format)
+    elif args.command == "pdf2text":
+        pdf_to_text(args.pdf, args.output)
+    elif args.command == "imgconv":
+        convert_image_format(args.input, args.output, fmt=args.format)
+    elif args.command == "pdfmerge":
+        merge_pdfs(args.pdfs, args.output)
+    elif args.command == "pdfsplit":
+        split_pdf(args.pdf, args.output, pages_per_file=args.pages)
+    elif args.command == "excel2pdf":
+        excel_to_pdf(args.excel, args.output)
+    elif args.command == "ppt2pdf":
+        ppt_to_pdf(args.ppt, args.output)
+    elif args.command == "txt2pdf":
+        text_to_pdf(args.text, args.output)
     else:
         parser.print_help()
 
